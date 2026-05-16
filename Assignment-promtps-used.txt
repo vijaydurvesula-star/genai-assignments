@@ -1,0 +1,76 @@
+prompts used 
+
+Read my entire workspace and confirm me what are the files will be impacted if I want to add Selenium/Python same like implemented for
+Selenium Java
+Based on my exploration, here are the files that will be impacted to add Selenium/Python support (mirroring Selenium/Java):
+
+OUTPUT : 
+
+Files to Modify
+1. src/scripts/prompts.js — Primary
+Add new prompt templates and code generator type entries:
+
+Add SELENIUM_PYTHON_PAGE_ONLY to DEFAULT_PROMPTS (mirror of SELENIUM_JAVA_PAGE_ONLY, line 9)
+Add CUCUMBER_WITH_SELENIUM_PYTHON_STEPS to DEFAULT_PROMPTS (mirror of CUCUMBER_WITH_SELENIUM_JAVA_STEPS, line 94) — using behave/pytest-bdd + selenium Python bindings
+Add matching keys in CODE_GENERATOR_TYPES (line 216)
+2. src/scripts/chat.js — Primary
+getPromptKeys() (line ~550): add branches calling isPythonSelenium(lang, eng) to push SELENIUM_PYTHON_PAGE_ONLY / CUCUMBER_WITH_SELENIUM_PYTHON_STEPS in all three places where isJavaSelenium is currently handled (lines 564, 573, 585)
+isPythonSelenium() already exists (line 606) — reusable as-is
+addUnsupportedLanguageMessage() (line ~617): update message string since Python will no longer be unsupported
+3. panel.html — Small fix
+Line 99: the Python <option> currently has value="py", but isPythonSelenium compares against 'python'. Either change the option value to "python" or normalize in chat.js. This is a required fix for the dropdown selection to actually trigger the Python branch.
+
+Files NOT Impacted
+bg.js, content.js, popup.js, tabs.js — language/engine agnostic
+API files (groq-api.js, openai-api.js, testleaf-api.js) — provider-only
+CSS files, config files (appConfig.js, configUtils.js) — no language-specific logic
+marked/prism libraries
+Summary
+3 files total: prompts.js (add 2 prompts + 2 type entries), chat.js (add 3 Python branches + update warning message), panel.html (fix py → python value mismatch).
+
+
+
+Prompt used 
+
+go to src/scripts/prompts.js and add new prompt templates and code generator type entries for SELENIUM PYTHON
+Take selenium Java as reference
+1.ADD SELENIUM_PYTHON_PAGE_ONLY
+2.ADD CUCUMBER_WITH_SELENIUM_PYTHON_STEPS
+3. Add matching keys in CODE_GENERATOR_TYPES
+
+OUTPUT : 
+
+Done. Added to src/scripts/prompts.js:
+
+SELENIUM_PYTHON_PAGE_ONLY — Page Object class prompt using Selenium 4.x Python bindings, PEP 257 docstrings, snake_case, and WebDriverWait in the constructor.
+CUCUMBER_WITH_SELENIUM_PYTHON_STEPS — Combined .feature + behave step definitions with WebDriver setup/teardown, explicit waits, and Scenario Outline.
+CODE_GENERATOR_TYPES — Added SELENIUM_PYTHON_PAGE_ONLY: 'Selenium-Python-Page-Only' and CUCUMBER_WITH_SELENIUM_PYTHON_STEPS: 'Cucumber-With-Selenium-Python-Steps'.
+Next steps (when ready): wire these keys into getPromptKeys() in chat.js via isPythonSelenium(), and fix the panel.html dropdown value (py → python) so the Python branch actually triggers.
+
+
+Prompt used 
+
+go to src/scripts/chat.js
+getPromptKeys() (line ~550): add branches calling isPythonSelenium(lang, eng) to push SELENIUM_PYTHON_PAGE_ONLY / CUCUMBER_WITH_SELENIUM_PYTHON_STEPS in all three places where isJavaSelenium is currently handled (lines 564, 573, 585)
+isPythonSelenium() already exists (line 606) — reusable as-is
+addUnsupportedLanguageMessage() (line ~617): update message string since Python will no longer be unsupported
+
+OUTPUT : 
+
+Done. Updated src/scripts/chat.js:
+
+Default fallback branch — added isPythonSelenium → SELENIUM_PYTHON_PAGE_ONLY.
+Feature + Page combined branch — added isPythonSelenium → CUCUMBER_WITH_SELENIUM_PYTHON_STEPS.
+Page-only branch — added isPythonSelenium → SELENIUM_PYTHON_PAGE_ONLY.
+addUnsupportedLanguageMessage — message now reads: "Currently supported: Java/Selenium, Python/Selenium."
+Reminder: the dropdown in panel.html still uses value="py" for Python — isPythonSelenium checks for 'python', so the Python branches won't fire until that value is updated.
+
+
+Prompt used 
+
+panel.html — Small fix
+Line 99: the Python <option> currently has value="py", but isPythonSelenium compares against 'python'. Either change the option value to "python" or normalize in chat.js. This is a required fix for the dropdown selection to actually trigger the Python branch.
+
+OUTPUT : 
+
+Done. Changed value="py" → value="python" in panel.html so the Python option now matches the 'python' check in isPythonSelenium().
